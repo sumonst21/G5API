@@ -1326,6 +1326,7 @@ router.post(
       // Begin transaction
       if (matchValues[0].start_time == null) {
         // Update match stats to have a start time.
+        // TODO: Include further info about pauses.
         updateStmt = {
           paused: false,
         };
