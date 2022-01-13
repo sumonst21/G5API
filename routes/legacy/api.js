@@ -1192,6 +1192,166 @@ router.post(
   }
 );
 
+/**
+ * @swagger
+ *
+ * /match/:match_id/map/:map_number/pause:
+ *   post:
+ *     description: Called to update the database value when a match is paused.
+ *     produces:
+ *       - application/json
+ *     requestBody:
+ *      required: true
+ *      content:
+ *        application/json:
+ *          schema:
+ *            type: object
+ *            properties:
+ *              key:
+ *                type: integer
+ *                description: The API key given from the game server to compare.
+ *              map_number:
+ *                type: integer
+ *                description: The given map number to start.
+ *              match_id:
+ *                type: integer
+ *                description: The given match ID from the path.
+ *
+ *     tags:
+ *       - legacy
+ *     responses:
+ *       200:
+ *         description: Success.
+ *         content:
+ *             text/plain:
+ *                schema:
+ *                  type: string
+ *       500:
+ *         $ref: '#/components/responses/Error'
+ */
+ router.post(
+  "/:match_id/map/:map_number/pause",
+  basicRateLimit,
+  async (req, res, next) => {
+    try {
+      // Give from API call.
+      let matchID = req.params.match_id == null ? null : req.params.match_id;
+      let mapNumber =
+        req.params.map_number == null ? null : req.params.map_number;
+      // Data manipulation inside function.
+      let startTime = new Date().toISOString().slice(0, 19).replace("T", " ");
+      let updateStmt = {};
+      let updateSql;
+      let matchFinalized = true;
+      // Database calls.
+      let sql = "SELECT * FROM `match` WHERE id = ?";
+      const matchValues = await db.query(sql, matchID);
+
+      if (
+        matchValues[0].end_time == null &&
+        (matchValues[0].cancelled == null || matchValues[0].cancelled == 0)
+      )
+        matchFinalized = false;
+      // Throw error if wrong key or finished match.
+      await check_api_key(matchValues[0].api_key, req.body.key, matchFinalized);
+
+      // Begin transaction
+      if (matchValues[0].start_time == null) {
+        // Update match stats to have a start time.
+        updateStmt = {
+          paused: true,
+        };
+        updateSql = "UPDATE `match` SET ? WHERE id = ?";
+        await db.query(updateSql, [updateStmt, matchID]);
+      }
+      res.status(200).send({ message: "Success" });
+    } catch (err) {
+      console.log(err);
+      res.status(500).json({ message: err.toString() });
+    }
+  }
+);
+
+/**
+ * @swagger
+ *
+ * /match/:match_id/map/:map_number/unpause:
+ *   post:
+ *     description: Called to update the database value when a match is unpaused.
+ *     produces:
+ *       - application/json
+ *     requestBody:
+ *      required: true
+ *      content:
+ *        application/json:
+ *          schema:
+ *            type: object
+ *            properties:
+ *              key:
+ *                type: integer
+ *                description: The API key given from the game server to compare.
+ *              map_number:
+ *                type: integer
+ *                description: The given map number to start.
+ *              match_id:
+ *                type: integer
+ *                description: The given match ID from the path.
+ *
+ *     tags:
+ *       - legacy
+ *     responses:
+ *       200:
+ *         description: Success.
+ *         content:
+ *             text/plain:
+ *                schema:
+ *                  type: string
+ *       500:
+ *         $ref: '#/components/responses/Error'
+ */
+ router.post(
+  "/:match_id/map/:map_number/unpause",
+  basicRateLimit,
+  async (req, res, next) => {
+    try {
+      // Give from API call.
+      let matchID = req.params.match_id == null ? null : req.params.match_id;
+      let mapNumber =
+        req.params.map_number == null ? null : req.params.map_number;
+      // Data manipulation inside function.
+      let startTime = new Date().toISOString().slice(0, 19).replace("T", " ");
+      let updateStmt = {};
+      let updateSql;
+      let matchFinalized = true;
+      // Database calls.
+      let sql = "SELECT * FROM `match` WHERE id = ?";
+      const matchValues = await db.query(sql, matchID);
+
+      if (
+        matchValues[0].end_time == null &&
+        (matchValues[0].cancelled == null || matchValues[0].cancelled == 0)
+      )
+        matchFinalized = false;
+      // Throw error if wrong key or finished match.
+      await check_api_key(matchValues[0].api_key, req.body.key, matchFinalized);
+
+      // Begin transaction
+      if (matchValues[0].start_time == null) {
+        // Update match stats to have a start time.
+        updateStmt = {
+          paused: false,
+        };
+        updateSql = "UPDATE `match` SET ? WHERE id = ?";
+        await db.query(updateSql, [updateStmt, matchID]);
+      }
+      res.status(200).send({ message: "Success" });
+    } catch (err) {
+      console.log(err);
+      res.status(500).json({ message: err.toString() });
+    }
+  }
+);
+
 /** Reports whether the match is given a correct API key, or if the match has finished.
  * @function
  * @memberof module:legacy/api
