@@ -1195,7 +1195,7 @@ router.post(
 /**
  * @swagger
  *
- * /match/:match_id/map/:map_number/pause:
+ * /match/:match_id/pause:
  *   post:
  *     description: Called to update the database value when a match is paused.
  *     produces:
@@ -1210,9 +1210,6 @@ router.post(
  *              key:
  *                type: integer
  *                description: The API key given from the game server to compare.
- *              map_number:
- *                type: integer
- *                description: The given map number to start.
  *              match_id:
  *                type: integer
  *                description: The given match ID from the path.
@@ -1230,16 +1227,13 @@ router.post(
  *         $ref: '#/components/responses/Error'
  */
  router.post(
-  "/:match_id/map/:map_number/pause",
+  "/:match_id/pause",
   basicRateLimit,
   async (req, res, next) => {
     try {
       // Give from API call.
       let matchID = req.params.match_id == null ? null : req.params.match_id;
-      let mapNumber =
-        req.params.map_number == null ? null : req.params.map_number;
       // Data manipulation inside function.
-      let startTime = new Date().toISOString().slice(0, 19).replace("T", " ");
       let updateStmt = {};
       let updateSql;
       let matchFinalized = true;
@@ -1275,7 +1269,7 @@ router.post(
 /**
  * @swagger
  *
- * /match/:match_id/map/:map_number/unpause:
+ * /match/:match_id/unpause:
  *   post:
  *     description: Called to update the database value when a match is unpaused.
  *     produces:
@@ -1290,9 +1284,6 @@ router.post(
  *              key:
  *                type: integer
  *                description: The API key given from the game server to compare.
- *              map_number:
- *                type: integer
- *                description: The given map number to start.
  *              match_id:
  *                type: integer
  *                description: The given match ID from the path.
@@ -1310,16 +1301,13 @@ router.post(
  *         $ref: '#/components/responses/Error'
  */
  router.post(
-  "/:match_id/map/:map_number/unpause",
+  "/:match_id/unpause",
   basicRateLimit,
   async (req, res, next) => {
     try {
       // Give from API call.
       let matchID = req.params.match_id == null ? null : req.params.match_id;
-      let mapNumber =
-        req.params.map_number == null ? null : req.params.map_number;
       // Data manipulation inside function.
-      let startTime = new Date().toISOString().slice(0, 19).replace("T", " ");
       let updateStmt = {};
       let updateSql;
       let matchFinalized = true;
